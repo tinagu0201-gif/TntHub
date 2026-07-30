@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNT Global Hub - Your gateway to TNT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --bg-primary: #0A0A0F;
+            --bg-card: #14141C;
+            --bg-card-secondary: #1C1C2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9A9AB0;
+            --text-tertiary: #6A6A8A;
+            --accent-primary: #FACC15;
+            --accent-gold: #FFD700;
+            --accent-secondary: #FF6B8A;
+            --success: #4ADE80;
+            --border-color: #2A2A3A;
+            --divider: #1E1E30;
+            --font-en: 'Inter', sans-serif;
+            --font-zh: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-en), var(--font-zh), sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navbar */
+        #navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+        }
+
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .lang-btn.active {
+            color: var(--accent-primary);
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .login-btn {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #E5B800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(250, 204, 21, 0.4);
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        /* User Dropdown */
+        #user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            min-width: 200px;
+            display: none;
+            margin-top: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        #user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-user-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-user-email {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--divider);
+            margin: 12px 0;
+        }
+
+        .signout-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            padding: 8px 0;
+            transition: color 0.3s;
+        }
+
+        .signout-btn:hover {
+            color: var(--accent-secondary);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            padding: 40px 0;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero {
+            background: radial-gradient(circle at center, #1A0A00 0%, #0A0A0F 100%);
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .hero-image {
+            width: 100%;
+            max-width: 1200px;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin: 0 auto;
+            display: block;
+            position: relative;
+        }
+
+        .hero-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(10, 10, 15, 0.8) 100%);
+            border-radius: 16px;
+        }
+
+        .scroll-indicator {
+            margin-top: 32px;
+            color: var(--text-tertiary);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        /* Section Styles */
+        .section {
+            margin: 60px 0;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
+        }
+
+        .card-glass {
+            background: rgba(20, 20, 28, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* Official Accounts */
+        .platform-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .platform-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-card-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .platform-info h3 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .platform-note {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .platform-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Content Cards */
+        .content-card h3 {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .content-platform {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .content-note {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
+        }
+
+        .content-btn {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .content-btn:hover {
+            background: #E5B800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
+        }
+
+        /* Schedule */
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .schedule-date {
+            font-weight: 700;
+            color: var(--accent-primary);
+            min-width: 120px;
+        }
+
+        .schedule-event {
+            flex: 1;
+        }
+
+        .schedule-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tag-comeback { background: rgba(250, 204, 21, 0.2); color: var(--accent-primary); }
+        .tag-variety { background: rgba(255, 107, 138, 0.2); color: var(--accent-secondary); }
+        .tag-concert { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+        .tag-live { background: rgba(250, 204, 21, 0.2); color: #FACC15; }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .faq-answer {
+            padding: 0 16px 16px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        .faq-item.open .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Community */
+        .community-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .new-post-btn {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .new-post-btn:hover {
+            background: #E5B800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(250, 204, 21, 0.4);
+        }
+
+        /* Post Cards */
+        .post-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .post-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(250, 204, 21, 0.15);
+        }
+
+        .post-card.pinned {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .post-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .post-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tag-discussion { background: rgba(250, 204, 21, 0.2); color: var(--accent-primary); }
+        .tag-help { background: rgba(255, 107, 138, 0.2); color: var(--accent-secondary); }
+        .tag-translation { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+        .tag-promo { background: rgba(250, 204, 21, 0.2); color: #FACC15; }
+        .tag-share { background: rgba(96, 165, 250, 0.2); color: #60A5FA; }
+        .tag-announcement { background: rgba(255, 215, 0, 0.2); color: var(--accent-gold); }
+
+        .post-content {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .post-footer {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        /* Trading Post Cards (Xianyu Style) */
+        .post-card.trading {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .post-card.trading.selling {
+            border-left: 4px solid var(--success);
+        }
+
+        .post-card.trading.buying {
+            border-left: 4px solid #FF8C00;
+        }
+
+        .trading-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--bg-card-secondary);
+            flex-shrink: 0;
+        }
+
+        .trading-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .trading-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 4px;
+        }
+
+        .trading-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .trading-tag {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .trading-tag.selling {
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .trading-tag.buying {
+            border: 1px solid #FF8C00;
+            color: #FF8C00;
+        }
+
+        .trading-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .trading-status.available {
+            background: rgba(250, 204, 21, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .trading-status.sold {
+            background: rgba(106, 106, 138, 0.2);
+            color: var(--text-tertiary);
+        }
+
+        /* Post Detail */
+        #post-detail {
+            display: none;
+        }
+
+        #post-detail.show {
+            display: block;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .detail-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .detail-meta {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .detail-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        /* Trading Post Detail */
+        .trading-detail-image {
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin: 0 auto 24px;
+            display: block;
+            background: var(--bg-card-secondary);
+        }
+
+        .trading-detail-price {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .trading-detail-info {
+            background: var(--bg-card-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .trading-detail-info p {
+            margin-bottom: 8px;
+        }
+
+        .trading-detail-info strong {
+            color: var(--text-primary);
+        }
+
+        .mark-sold-btn {
+            background: transparent;
+            border: 2px solid var(--accent-primary);
+            color: var(--accent-primary);
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .mark-sold-btn:hover {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+        }
+
+        .trading-warning {
+            background: rgba(255, 107, 138, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--accent-secondary);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 32px;
+        }
+
+        .comments-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .comment-item {
+            background: var(--bg-card-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .comment-time {
+            color: var(--text-tertiary);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .comment-content {
+            color: var(--text-secondary);
+        }
+
+        .comment-input-area {
+            margin-top: 24px;
+        }
+
+        .comment-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 12px;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .comment-submit {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .comment-submit:hover {
+            background: #E5B800;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: var(--bg-card-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            margin-bottom: 16px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .modal-textarea {
+            width: 100%;
+            background: var(--bg-card-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 16px;
+        }
+
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .modal-select {
+            width: 100%;
+            background: var(--bg-card-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            margin-bottom: 16px;
+        }
+
+        .modal-hint {
+            color: var(--text-tertiary);
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+        }
+
+        .modal-btn-primary {
+            background: var(--accent-primary);
+            color: #0A0A0F;
+        }
+
+        .modal-btn-primary:hover {
+            background: #E5B800;
+        }
+
+        .modal-btn-secondary {
+            background: var(--bg-card-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Post Type Selection */
+        .post-type-selection {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .post-type-btn {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-card-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .post-type-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .post-type-btn.active {
+            border-color: var(--accent-primary);
+            background: rgba(250, 204, 21, 0.1);
+        }
+
+        .post-type-btn i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--accent-primary);
+        }
+
+        .post-type-btn span {
+            display: block;
+            font-weight: 600;
+        }
+
+        /* Image Upload */
+        .image-upload {
+            margin-bottom: 16px;
+        }
+
+        .image-upload-btn {
+            background: var(--bg-card-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-upload-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .image-preview {
+            width: 100%;
+            max-width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        /* Terms Modal */
+        .terms-content {
+            max-height: 400px;
+            overflow-y: auto;
+            background: var(--bg-card-secondary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .terms-content h4 {
+            margin: 16px 0 8px;
+            font-weight: 600;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .terms-checkbox input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .terms-checkbox label {
+            font-size: 14px;
+        }
+
+        /* Login Prompt */
+        .login-prompt-content {
+            text-align: center;
+        }
+
+        .login-prompt-icon {
+            font-size: 48px;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+        }
+
+        /* Merch */
+        .merch-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--accent-primary);
+            color: #0A0A0F;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .merch-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .merch-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: var(--bg-card-secondary);
+        }
+
+        .merch-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .merch-price {
+            color: var(--accent-primary);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .merch-warning {
+            font-size: 12px;
+            color: var(--accent-secondary);
+            margin-top: 8px;
+        }
+
+        /* Footer */
+        .footer-disclaimer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 24px 0;
+            margin-top: 60px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-align: center;
+        }
+
+        .footer-disclaimer strong {
+            color: var(--accent-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav-links {
+                gap: 16px;
+                font-size: 14px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .hero-image {
+                height: 300px;
+            }
+
+            .community-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .schedule-date {
+                min-width: auto;
+            }
+
+            /* Trading cards on mobile */
+            .post-card.trading {
+                flex-direction: column;
+            }
+
+            .trading-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav id="navbar">
+            <div class="container navbar-content">
+                <a href="#" class="logo">TNT Global Hub</a>
+                <div class="nav-links">
+                    <a class="nav-link active" data-page="home">🏠 <span data-i18n="nav_home">首页 / Home</span></a>
+                    <a class="nav-link" data-page="community">💬 <span data-i18n="nav_community">社区 / Community</span></a>
+                    <a class="nav-link" data-page="merch">🛍️ <span data-i18n="nav_merch">周边 / Merch</span></a>
+                </div>
+                <div class="nav-right">
+                    <div class="lang-switch">
+                        <button class="lang-btn" data-lang="zh">中文</button>
+                        <button class="lang-btn active" data-lang="en">English</button>
+                    </div>
+                    <div id="user-area">
+                        <button class="login-btn" data-i18n="sign_in">Sign In / 登录</button>
+                    </div>
+                </div>
+            </div>
+            <!-- User Dropdown -->
+            <div id="user-dropdown">
+                <div class="dropdown-user-name"></div>
+                <div class="dropdown-user-email"></div>
+                <div class="dropdown-divider"></div>
+                <button class="signout-btn" data-i18n="sign_out">Sign Out / 退出登录</button>
+            </div>
+        </nav>
+
+        <!-- Home Page -->
+        <div id="page-home" class="page active">
+            <!-- Hero -->
+            <section class="hero">
+                <div class="container">
+                    <h1 class="hero-title">TNT Global Hub</h1>
+                    <p class="hero-subtitle" data-i18n="hero_subtitle">Your gateway to TNT. For fans, by fans.</p>
+                    <img src="https://via.placeholder.com/1200x500/1A0A00/FACC15?text=TNT+Stage+Photo" alt="TNT Stage" class="hero-image">
+                    <div class="scroll-indicator">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Official Accounts -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title" data-i18n="official_accounts">官方账号 / Official Accounts</h2>
+                    <div class="card-grid">
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-weibo"></i></div>
+                            <div class="platform-info">
+                                <h3>微博 Weibo</h3>
+                                <a href="https://weibo.com" target="_blank" class="platform-link">@时代少年团</a>
+                            </div>
+                        </div>
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-youtube"></i></div>
+                            <div class="platform-info">
+                                <h3>YouTube</h3>
+                                <a href="https://youtube.com" target="_blank" class="platform-link">TNT Official</a>
+                            </div>
+                        </div>
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-bilibili"></i></div>
+                            <div class="platform-info">
+                                <h3>Bilibili</h3>
+                                <a href="https://bilibili.com" target="_blank" class="platform-link">时代少年团官方</a>
+                            </div>
+                        </div>
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-instagram"></i></div>
+                            <div class="platform-info">
+                                <h3>Instagram</h3>
+                                <a href="https://instagram.com" target="_blank" class="platform-link">@teensintimes</a>
+                            </div>
+                        </div>
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-tiktok"></i></div>
+                            <div class="platform-info">
+                                <h3>TikTok</h3>
+                                <a href="https://tiktok.com" target="_blank" class="platform-link">@teensintimes</a>
+                            </div>
+                        </div>
+                        <div class="card platform-card">
+                            <div class="platform-icon"><i class="fab fa-tiktok"></i></div>
+                            <div class="platform-info">
+                                <h3>抖音 Douyin</h3>
+                                <a href="https://douyin.com" target="_blank" class="platform-link">@时代少年团</a>
+                                <p class="platform-note" data-i18n="cn_phone_required">需中国手机号 / CN phone required</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Guide -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title" data-i18n="content_guide">内容在哪里看 / Where to Watch</h2>
+                    <div class="card-grid">
+                        <div class="card content-card">
+                            <h3 data-i18n="show_onfire">少年On Fire</h3>
+                            <p class="content-platform">芒果TV MangoTV</p>
+                            <p class="content-note" data-i18n="vip_required">需VIP / VIP required</p>
+                            <button class="content-btn" data-i18n="watch_now">观看 / Watch</button>
+                        </div>
+                        <div class="card content-card">
+                            <h3 data-i18n="show_jiezhaoba">接招吧！前辈</h3>
+                            <p class="content-platform">腾讯视频 Tencent Video</p>
+                            <p class="content-note" data-i18n="vip_required">需VIP / VIP required</p>
+                            <button class="content-btn" data-i18n="watch_now">观看 / Watch</button>
+                        </div>
+                        <div class="card content-card">
+                            <h3 data-i18n="show_camp">时代夏令营</h3>
+                            <p class="content-platform">Bilibili</p>
+                            <p class="content-note" data-i18n="free">免费 / Free</p>
+                            <button class="content-btn" data-i18n="watch_now">观看 / Watch</button>
+                        </div>
+                        <div class="card content-card">
+                            <h3 data-i18n="show_stages">TNT舞台合集</h3>
+                            <p class="content-platform">Bilibili</p>
+                            <p class="content-note" data-i18n="free">免费 / Free</p>
+                            <button class="content-btn" data-i18n="watch_now">观看 / Watch</button>
+                        </div>
+                        <div class="card content-card">
+                            <h3 data-i18n="show_concert">火力全开演唱会</h3>
+                            <p class="content-platform">腾讯视频 Tencent Video</p>
+                            <p class="content-note" data-i18n="vip_required">需VIP / VIP required</p>
+                            <button class="content-btn" data-i18n="watch_now">观看 / Watch</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Translation Resources -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title" data-i18n="translation_resources">粉丝翻译资源 / Fan Translation Resources</h2>
+                    <div class="card-grid">
+                        <div class="card card-glass">
+                            <h3 data-i18n="resource_subtitles">英文字幕视频</h3>
+                            <p class="content-platform" data-i18n="resource_subtitles_desc">Bilibili & YouTube fan uploads</p>
+                        </div>
+                        <div class="card card-glass">
+                            <h3 data-i18n="resource_weibo">微博热点翻译</h3>
+                            <p class="content-platform" data-i18n="resource_weibo_desc">Daily weibo updates translated</p>
+                        </div>
+                        <div class="card card-glass">
+                            <h3 data-i18n="resource_members">成员介绍指南</h3>
+                            <p class="content-platform" data-i18n="resource_members_desc">Get to know each member</p>
+                        </div>
+                        <div class="card card-glass">
+                            <h3 data-i18n="resource_cp">花名CP科普</h3>
+                            <p class="content-platform" data-i18n="resource_cp_desc">Fan nicknames & shipping guide</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Schedule -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title" data-i18n="schedule">行程日历 / Schedule</h2>
+                    <div id="schedule-list">
+                        <!-- Schedule items will be rendered here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title" data-i18n="faq">常见问题 / FAQ</h2>
+                    <div id="faq-list">
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span data-i18n="faq_who_q">TNT是谁？/ Who is TNT?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p data-i18n="faq_who_a">TNT（时代少年团）是时代峰峻旗下的中国男子演唱组合，由马嘉祺、丁程鑫、宋亚轩、刘耀文、张真源、严浩翔、贺峻霖七位成员组成。</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span data-i18n="faq_members_q">成员有谁？/ Who are the members?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p data-i18n="faq_members_a">马嘉祺（队长）、丁程鑫、宋亚轩、刘耀文、张真源、严浩翔、贺峻霖。</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span data-i18n="faq_follow_q">怎么追TNT？/ How to follow TNT?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p data-i18n="faq_follow_a">关注官方微博、B站、YouTube账号，加入粉丝社区，查看本站的行程日历和内容指南。</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span data-i18n="faq_watch_q">怎么看综艺？/ How to watch variety shows?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p data-i18n="faq_watch_a">大部分综艺在芒果TV或腾讯视频播出，需要VIP会员。部分内容在B站免费观看。</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <span data-i18n="faq_merch_q">怎么买周边？/ How to buy merchandise?</span>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p data-i18n="faq_merch_a">官方周边通过T-FAMILY App购买，需要转运服务。详细步骤请查看"周边"页面。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Community Page -->
+        <div id="page-community" class="page">
+            <div class="container">
+                <div class="community-header">
+                    <h1 class="section-title">💬 <span data-i18n="community_title">社区 / Community</span></h1>
+                    <button class="new-post-btn" data-i18n="new_post">发帖 / New Post</button>
+                </div>
+                <div id="community-feed">
+                    <!-- Posts will be rendered here -->
+                </div>
+                <!-- Post Detail -->
+                <div id="post-detail">
+                    <button class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span data-i18n="back_to_community">返回社区 / Back to Community</span>
+                    </button>
+                    <div id="detail-content">
+                        <!-- Post detail will be rendered here -->
+                    </div>
+                    <div class="comments-section">
+                        <h3 class="comments-title">💬 <span data-i18n="comments">评论 / Comments</span></h3>
+                        <div id="comments-list">
+                            <!-- Comments will be rendered here -->
+                        </div>
+                        <div class="comment-input-area" id="comment-input-area">
+                            <textarea class="comment-input" data-i18n-placeholder="comment_placeholder" placeholder="写评论... / Write a comment..."></textarea>
+                            <button class="comment-submit" data-i18n="comment">评论 / Comment</button>
+                        </div>
+                        <div id="comment-login-prompt" style="display: none;">
+                            <p data-i18n="please_sign_in_comment">请登录后评论 / Please sign in to comment</p>
+                            <button class="login-btn" data-i18n="sign_in">Sign In / 登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Merch Page -->
+        <div id="page-merch" class="page">
+            <div class="container">
+                <h1 class="section-title">🛍️ <span data-i18n="merch_title">周边导购 / Merch Guide</span></h1>
+                
+                <!-- Official Guide -->
+                <section class="section">
+                    <h2 class="section-title" data-i18n="official_merch_guide">官方周边购买指南 / Official Merch Guide</h2>
+                    <div class="merch-step">
+                        <span class="step-number">1</span>
+                        <h3 data-i18n="step1_title">访问T-FAMILY App</h3>
+                        <p data-i18n="step1_desc">下载T-FAMILY App，这是官方海外粉丝平台。/ Download T-FAMILY App, the official platform for overseas fans.</p>
+                        <a href="#" class="platform-link">T-FAMILY App</a>
+                    </div>
+                    <div class="merch-step">
+                        <span class="step-number">2</span>
+                        <h3 data-i18n="step2_title">注册账号</h3>
+                        <p data-i18n="step2_desc">需要中国手机号接收验证码。如果没有，可以使用虚拟号码服务。/ Requires Chinese phone number for verification. Virtual number services are available as alternatives.</p>
+                    </div>
+                    <div class="merch-step">
+                        <span class="step-number">3</span>
+                        <h3 data-i18n="step3_title">下单购买</h3>
+                        <p data-i18n="step3_desc">选择商品，填写国内转运地址。/ Select items and fill in domestic forwarding address.</p>
+                    </div>
+                    <div class="merch-step">
+                        <span class="step-number">4</span>
+                        <h3 data-i18n="step4_title">转运到海外</h3>
+                        <p data-i18n="step4_desc">推荐转运公司：Superbuy、Pandabuy、中通国际等。/ Recommended forwarders: Superbuy, Pandabuy, ZTO International, etc.</p>
+                    </div>
+                </section>
+
+                <!-- Fan-made Merch -->
+                <section class="section">
+                    <h2 class="section-title" data-i18n="fan_merch">自制周边推荐 / Fan-made Merch</h2>
+                    <div class="card-grid">
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/FACC15?text=Fan+Art" alt="Fan Art" class="merch-image">
+                            <h3 class="merch-name" data-i18n="fan_art">粉丝手绘 / Fan Art</h3>
+                            <p class="merch-price">$10 - $30</p>
+                            <p class="content-platform">闲鱼 Xianyu</p>
+                            <p class="merch-warning" data-i18n="fan_merch_warning">⚠️ 粉丝自制，非官方商品。购买前请自行判断。</p>
+                        </div>
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/FF6B8A?text=Photocards" alt="Photocards" class="merch-image">
+                            <h3 class="merch-name" data-i18n="fan_cards">自制小卡 / Fan Photocards</h3>
+                            <p class="merch-price">$5 - $15</p>
+                            <p class="content-platform">小红书 Xiaohongshu</p>
+                            <p class="merch-warning" data-i18n="fan_merch_warning">⚠️ 粉丝自制，非官方商品。购买前请自行判断。</p>
+                        </div>
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/4ADE80?text=Goods" alt="Goods" class="merch-image">
+                            <h3 class="merch-name" data-i18n="fan_goods">手工周边 / Handmade Goods</h3>
+                            <p class="merch-price">$15 - $50</p>
+                            <p class="content-platform">微博 Weibo</p>
+                            <p class="merch-warning" data-i18n="fan_merch_warning">⚠️ 粉丝自制，非官方商品。购买前请自行判断。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Popular Merch -->
+                <section class="section">
+                    <h2 class="section-title" data-i18n="popular_merch">当前热门周边 / Popular Merch</h2>
+                    <div class="card-grid">
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/FACC15?text=Photobook" alt="Photobook" class="merch-image">
+                            <h3 class="merch-name" data-i18n="merch_photobook">TNT 2026 写真集 / Photobook</h3>
+                            <p class="merch-price">$45</p>
+                            <a href="#" class="platform-link" data-i18n="official_link">官方链接 / Official Link</a>
+                        </div>
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/FF6B8A?text=Light+Stick" alt="Light Stick" class="merch-image">
+                            <h3 class="merch-name" data-i18n="merch_lightstick">TNT 应援棒 / Light Stick</h3>
+                            <p class="merch-price">$35</p>
+                            <a href="#" class="platform-link" data-i18n="official_link">官方链接 / Official Link</a>
+                        </div>
+                        <div class="card merch-item">
+                            <img src="https://via.placeholder.com/300x200/1C1C2E/4ADE80?text=Photocards" alt="Photocards" class="merch-image">
+                            <h3 class="merch-name" data-i18n="merch_cards">TNT 小卡套装 / Photocard Set</h3>
+                            <p class="merch-price">$20</p>
+                            <a href="#" class="platform-link" data-i18n="official_link">官方链接 / Official Link</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Proxy Info -->
+                <section class="section">
+                    <h2 class="section-title" data-i18n="proxy_info">代购信息汇总 / Proxy Information</h2>
+                    <div class="card-grid">
+                        <div class="card">
+                            <h3 data-i18n="proxy1_name">代购A</h3>
+                            <p class="content-platform" data-i18n="proxy1_service">周边代购、演唱会门票 / Merch & Concert Tickets</p>
+                            <p class="content-note" data-i18n="proxy1_contact">微信: XXXXX</p>
+                            <p class="merch-warning" data-i18n="proxy_warning">此为粉丝整理信息，请自行核实。</p>
+                        </div>
+                        <div class="card">
+                            <h3 data-i18n="proxy2_name">代购B</h3>
+                            <p class="content-platform" data-i18n="proxy2_service">专辑代购、团购 / Albums & Group Orders</p>
+                            <p class="content-note" data-i18n="proxy2_contact">微博: @XXXXX</p>
+                            <p class="merch-warning" data-i18n="proxy_warning">此为粉丝整理信息，请自行核实。</p>
+                        </div>
+                        <div class="card">
+                            <h3 data-i18n="proxy3_name">代购C</h3>
+                            <p class="content-platform" data-i18n="proxy3_service">现场代拍、应援物 / Live Photos & Support Goods</p>
+                            <p class="content-note" data-i18n="proxy3_contact">Twitter: @XXXXX</p>
+                            <p class="merch-warning" data-i18n="proxy_warning">此为粉丝整理信息，请自行核实。</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Post Modal -->
+        <div id="post-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="modal-title" data-i18n="new_post">发帖 / New Post</h2>
+                
+                <!-- Post Type Selection -->
+                <div class="post-type-selection">
+                    <div class="post-type-btn active" data-type="regular">
+                        <i class="fas fa-edit"></i>
+                        <span data-i18n="regular_post">普通帖子 / Regular Post</span>
+                    </div>
+                    <div class="post-type-btn" data-type="trading">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span data-i18n="trading_post">交易帖子 / Trading Post</span>
+                    </div>
+                </div>
+
+                <!-- Regular Post Form -->
+                <div id="regular-post-form">
+                    <input type="text" class="modal-input" data-i18n-placeholder="post_title_placeholder" placeholder="标题 / Title">
+                    <textarea class="modal-textarea" data-i18n-placeholder="post_content_placeholder" placeholder="写点什么吧... / Share your thoughts..."></textarea>
+                    <select class="modal-select" id="post-tag-select">
+                        <option value="讨论 / Discussion" data-i18n="tag_discussion">讨论 / Discussion</option>
+                        <option value="求助 / Help" data-i18n="tag_help">求助 / Help</option>
+                        <option value="翻译 / Translation" data-i18n="tag_translation">翻译 / Translation</option>
+                        <option value="安利 / Promotion" data-i18n="tag_promo">安利 / Promotion</option>
+                        <option value="分享 / Share" data-i18n="tag_share">分享 / Share</option>
+                    </select>
+                    <p class="modal-hint" data-i18n="post_hint">💡 你可以用英文、中文或双语发帖！/ You can post in English, Chinese, or both!</p>
+                </div>
+
+                <!-- Trading Post Form -->
+                <div id="trading-post-form" style="display: none;">
+                    <input type="text" class="modal-input" id="trading-title" data-i18n-placeholder="post_title_placeholder" placeholder="标题 / Title">
+                    <input type="text" class="modal-input" id="trading-price" data-i18n-placeholder="price_placeholder" placeholder="价格 / Price">
+                    <div class="image-upload">
+                        <div class="image-upload-btn" id="image-upload-btn">
+                            <i class="fas fa-camera" style="font-size: 24px; color: var(--accent-primary); margin-bottom: 8px;"></i>
+                            <p data-i18n="upload_image">上传商品图片 / Upload Product Image</p>
+                        </div>
+                        <input type="file" id="image-input" accept="image/*" style="display: none;">
+                        <img id="image-preview" class="image-preview" alt="Preview">
+                    </div>
+                    <select class="modal-select" id="trading-condition">
+                        <option value="全新 / Brand New" data-i18n="condition_new">全新 / Brand New</option>
+                        <option value="几乎全新 / Like New" data-i18n="condition_like_new">几乎全新 / Like New</option>
+                        <option value="轻微使用痕迹 / Lightly Used" data-i18n="condition_lightly_used">轻微使用痕迹 / Lightly Used</option>
+                        <option value="有明显使用痕迹 / Heavily Used" data-i18n="condition_heavily_used">有明显使用痕迹 / Heavily Used</option>
+                    </select>
+                    <select class="modal-select" id="trading-shipping">
+                        <option value="邮寄 / Shipping" data-i18n="shipping">邮寄 / Shipping</option>
+                        <option value="面交 / Meet Up" data-i18n="meetup">面交 / Meet Up</option>
+                    </select>
+                    <select class="modal-select" id="trading-type">
+                        <option value="selling" data-i18n="selling">出售 / Selling</option>
+                        <option value="buying" data-i18n="buying">求购 / Buying</option>
+                    </select>
+                    <textarea class="modal-textarea" id="trading-description" data-i18n-placeholder="description_placeholder" placeholder="描述商品详情... / Describe your item..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-secondary" data-i18n="cancel">取消 / Cancel</button>
+                    <button class="modal-btn modal-btn-primary" data-i18n="post">发布 / Post</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Prompt Modal -->
+        <div id="login-prompt" class="modal">
+            <div class="modal-content login-prompt-content">
+                <div class="login-prompt-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h2 class="modal-title" data-i18n="please_sign_in_post">Please sign in to create a post. / 请登录后发帖。</h2>
+                <div class="modal-actions" style="justify-content: center;">
+                    <button class="modal-btn modal-btn-primary" id="prompt-signin-btn" data-i18n="sign_in">Sign In / 登录</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms Modal -->
+        <div id="terms-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="modal-title" data-i18n="terms_title">用户协议 / Terms of Service</h2>
+                <div class="terms-content">
+                    <h4 data-i18n="terms_en_title">EN:</h4>
+                    <p>TERMS OF SERVICE</p>
+                    <p>Last Updated: July 2026</p>
+                    <p><strong>1. Acceptance of Terms.</strong> By using TNT Global Hub, you agree to these Terms of Service. If you do not agree, please do not use the platform.</p>
+                    <p><strong>2. Age Requirement.</strong> You must be at least 13 years old to register an account and interact with the platform. By using this platform, you confirm that you are 13 or older.</p>
+                    <p><strong>3. User Accounts.</strong> You are responsible for maintaining the confidentiality of your Google account and for all activities that occur under your account.</p>
+                    <p><strong>4. User-Generated Content.</strong> You retain ownership of content you post. By posting, you grant TNT Global Hub a non-exclusive, royalty-free license to display and distribute your content on the platform. You are solely responsible for the content you post.</p>
+                    <p><strong>5. Prohibited Conduct.</strong> You agree not to post content that is: (a) illegal, (b) defamatory, (c) harassing, (d) infringing on intellectual property rights, or (e) impersonating others.</p>
+                    <p><strong>6. Platform Role.</strong> TNT Global Hub is a platform that connects fans. We do not endorse, guarantee, or take responsibility for any user-to-user transactions, including but not limited to merchandise sales, group orders, or proxy purchases. All transactions are between users. We are not a party to any agreement between users.</p>
+                    <p><strong>7. Disclaimer of Warranties.</strong> THE PLATFORM IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE THAT THE PLATFORM WILL BE UNINTERRUPTED OR ERROR-FREE.</p>
+                    <p><strong>8. Limitation of Liability.</strong> TO THE MAXIMUM EXTENT PERMITTED BY LAW, TNT Global Hub IS NOT LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OF THE PLATFORM.</p>
+                    <p><strong>9. Changes to Terms.</strong> We may update these Terms from time to time. Continued use constitutes acceptance of updated Terms.</p>
+                    <p><strong>10. Governing Law.</strong> These Terms are governed by the laws of the State of California, United States.</p>
+                    <p><strong>11. Contact.</strong> For questions about these Terms, please contact: [your email]</p>
+                    
+                    <h4 style="margin-top: 24px;" data-i18n="terms_zh_title">ZH:</h4>
+                    <p>用户协议</p>
+                    <p>最后更新日期：2026年7月</p>
+                    <p><strong>1. 接受条款。</strong> 使用TNT Global Hub即表示您同意本用户协议。如果您不同意，请勿使用本平台。</p>
+                    <p><strong>2. 年龄要求。</strong> 您必须年满13周岁才能注册账号并与本平台互动。使用本平台即表示您确认已年满13周岁。</p>
+                    <p><strong>3. 用户账户。</strong> 您有责任维护您的Google账号的机密性，并对您账号下发生的所有活动负责。</p>
+                    <p><strong>4. 用户生成内容。</strong> 您保留您发布内容的版权。发布即表示您授予TNT Global Hub非独家、免版税的许可，用于在平台上展示和分发您的内容。您对您发布的内容承担全部责任。</p>
+                    <p><strong>5. 禁止行为。</strong> 您同意不发布以下内容：(a) 非法内容 (b) 诽谤内容 (c) 骚扰内容 (d) 侵犯知识产权的内容 (e) 冒充他人的内容。</p>
+                    <p><strong>6. 平台角色。</strong> TNT Global Hub是一个连接粉丝的平台。我们不认可、不担保、也不对任何用户之间的交易承担责任，包括但不限于商品销售、拼车或代购。所有交易均为用户之间自行进行。我们不是用户之间任何协议的一方。</p>
+                    <p><strong>7. 免责声明。</strong> 本平台按"现状"提供，不提供任何形式的保证。我们不保证平台不会中断或无错误。</p>
+                    <p><strong>8. 责任限制。</strong> 在法律允许的最大范围内，TNT Global Hub不对因您使用本平台而产生的任何直接、间接、附带或后果性损害承担责任。</p>
+                    <p><strong>9. 条款变更。</strong> 我们可能不时更新本条款。继续使用即表示接受更新后的条款。</p>
+                    <p><strong>10. 管辖法律。</strong> 本条款受美国加利福尼亚州法律管辖。</p>
+                    <p><strong>11. 联系方式。</strong> 如有疑问，请联系：[your email]</p>
+                </div>
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms-age">
+                    <label for="terms-age" data-i18n="terms_age">I am 13 years or older. / 我已年满13周岁。</label>
+                </div>
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms-agree">
+                    <label for="terms-agree" data-i18n="terms_agree">I have read and agree to the Terms of Service and Disclaimer. / 我已阅读并同意用户协议和免责声明。</label>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-secondary" id="terms-cancel" data-i18n="cancel">取消 / Cancel</button>
+                    <button class="modal-btn modal-btn-primary" id="terms-continue" disabled data-i18n="continue">Continue / 继续</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Disclaimer -->
+        <footer class="footer-disclaimer">
+            <div class="container">
+                <p data-i18n="disclaimer">⚠️ DISCLAIMER: TNT Global Hub is a fan-made community platform. We are NOT affiliated with Times Young Feng, TNT, or any of their official entities. All content is user-generated. We do not host, sell, or guarantee any merchandise. Users are solely responsible for their own transactions. By using this platform, you agree that TNT Global Hub is not liable for any losses, disputes, or issues arising from user interactions. Always exercise caution when transacting with strangers online.</p>
+                <p style="margin-top: 8px;" data-i18n="disclaimer_zh">⚠️ 免责声明：TNT Global Hub 为粉丝自发建立的社区平台。我们与时代峰峻、TNT或任何其官方实体均无关联。所有内容均为用户生成。我们不托管、不出售、也不担保任何商品。用户对自身交易承担全部责任。使用本平台即表示您同意TNT Global Hub不对因用户互动而产生的任何损失、纠纷或问题承担责任。在线与陌生人交易时请务必谨慎。</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Google OAuth Client ID - Replace with your actual client ID from Google Cloud Console
+        const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE';
+
+        // Translations
+        const translations = {
+            en: {
+                nav_home: 'Home',
+                nav_community: 'Community',
+                nav_merch: 'Merch',
+                sign_in: 'Sign In',
+                sign_out: 'Sign Out',
+                hero_subtitle: 'Your gateway to TNT. For fans, by fans.',
+                official_accounts: 'Official Accounts',
+                cn_phone_required: 'CN phone required',
+                content_guide: 'Where to Watch',
+                show_onfire: '少年On Fire',
+                show_jiezhaoba: '接招吧！前辈',
+                show_camp: '时代夏令营',
+                show_stages: 'TNT舞台合集',
+                show_concert: '火力全开演唱会',
+                vip_required: 'VIP required',
+                free: 'Free',
+                watch_now: 'Watch',
+                translation_resources: 'Fan Translation Resources',
+                resource_subtitles: 'English Subtitle Videos',
+                resource_subtitles_desc: 'Bilibili & YouTube fan uploads',
+                resource_weibo: 'Weibo Hot Topics Translation',
+                resource_weibo_desc: 'Daily weibo updates translated',
+                resource_members: 'Member Introduction Guide',
+                resource_members_desc: 'Get to know each member',
+                resource_cp: 'Fan Nicknames & CP Guide',
+                resource_cp_desc: 'Fan nicknames & shipping guide',
+                schedule: 'Schedule',
+                faq: 'FAQ',
+                faq_who_q: 'Who is TNT?',
+                faq_who_a: 'TNT (时代少年团) is a Chinese boy group under Time Fengjun, consisting of 7 members: Ma Jiaqi, Ding Chengxin, Song Yaxuan, Liu Yaowen, Zhang Zhenyuan, Yan Haoxiang, and He Junlin.',
+                faq_members_q: 'Who are the members?',
+                faq_members_a: 'Ma Jiaqi (Captain), Ding Chengxin, Song Yaxuan, Liu Yaowen, Zhang Zhenyuan, Yan Haoxiang, He Junlin.',
+                faq_follow_q: 'How to follow TNT?',
+                faq_follow_a: 'Follow official Weibo, Bilibili, YouTube accounts, join fan communities, and check the schedule and content guide on this site.',
+                faq_watch_q: 'How to watch variety shows?',
+                faq_watch_a: 'Most variety shows are on MangoTV or Tencent Video, requiring VIP. Some content is free on Bilibili.',
+                faq_merch_q: 'How to buy merchandise?',
+                faq_merch_a: 'Official merchandise is purchased through T-FAMILY App, requiring forwarding services. Detailed steps are in the "Merch" section.',
+                community_title: 'Community',
+                new_post: 'New Post',
+                back_to_community: 'Back to Community',
+                comments: 'Comments',
+                comment_placeholder: 'Write a comment...',
+                comment: 'Comment',
+                please_sign_in_comment: 'Please sign in to comment',
+                please_sign_in_post: 'Please sign in to create a post.',
+                merch_title: 'Merch Guide',
+                official_merch_guide: 'Official Merch Guide',
+                step1_title: 'Visit T-FAMILY App',
+                step1_desc: 'Download T-FAMILY App, the official platform for overseas fans.',
+                step2_title: 'Register Account',
+                step2_desc: 'Requires Chinese phone number for verification. Virtual number services are available as alternatives.',
+                step3_title: 'Place Order',
+                step3_desc: 'Select items and fill in domestic forwarding address.',
+                step4_title: 'Forward Overseas',
+                step4_desc: 'Recommended forwarders: Superbuy, Pandabuy, ZTO International, etc.',
+                fan_merch: 'Fan-made Merch',
+                fan_art: 'Fan Art',
+                fan_cards: 'Fan Photocards',
+                fan_goods: 'Handmade Goods',
+                fan_merch_warning: '⚠️ Fan-made, not official. Please judge before purchasing.',
+                popular_merch: 'Popular Merch',
+                merch_photobook: 'TNT 2026 Photobook',
+                merch_lightstick: 'TNT Light Stick',
+                merch_cards: 'TNT Photocard Set',
+                official_link: 'Official Link',
+                proxy_info: 'Proxy Information',
+                proxy1_name: 'Proxy A',
+                proxy1_service: 'Merch & Concert Tickets',
+                proxy1_contact: 'WeChat: XXXXX',
+                proxy2_name: 'Proxy B',
+                proxy2_service: 'Albums & Group Orders',
+                proxy2_contact: 'Weibo: @XXXXX',
+                proxy3_name: 'Proxy C',
+                proxy3_service: 'Live Photos & Support Goods',
+                proxy3_contact: 'Twitter: @XXXXX',
+                proxy_warning: 'This is fan-compiled information. Please verify yourself.',
+                post_title_placeholder: 'Title',
+                post_content_placeholder: 'Share your thoughts...',
+                post_hint: '💡 You can post in English, Chinese, or both!',
+                cancel: 'Cancel',
+                post: 'Post',
+                tag_discussion: 'Discussion',
+                tag_help: 'Help',
+                tag_translation: 'Translation',
+                tag_promo: 'Promotion',
+                tag_share: 'Share',
+                terms_title: 'Terms of Service',
+                terms_age: 'I am 13 years or older.',
+                terms_agree: 'I have read and agree to the Terms of Service and Disclaimer.',
+                continue: 'Continue',
+                disclaimer: '⚠️ DISCLAIMER: TNT Global Hub is a fan-made community platform. We are NOT affiliated with Times Young Feng, TNT, or any of their official entities. All content is user-generated. We do not host, sell, or guarantee any merchandise. Users are solely responsible for their own transactions. By using this platform, you agree that TNT Global Hub is not liable for any losses, disputes, or issues arising from user interactions. Always exercise caution when transacting with strangers online.',
+                disclaimer_zh: '',
+                regular_post: 'Regular Post',
+                trading_post: 'Trading Post',
+                price_placeholder: 'Price',
+                upload_image: 'Upload Product Image',
+                condition_new: 'Brand New',
+                condition_like_new: 'Like New',
+                condition_lightly_used: 'Lightly Used',
+                condition_heavily_used: 'Heavily Used',
+                shipping: 'Shipping',
+                meetup: 'Meet Up',
+                selling: 'Selling',
+                buying: 'Buying',
+                description_placeholder: 'Describe your item...',
+                trading_warning: '⚠️ Trading Warning: This platform only provides information display and does not participate in any transactions. Please contact the other party via private message and use payment methods with buyer protection such as PayPal Goods & Services. All trading risks are borne by the users themselves.',
+                mark_sold: 'Mark as Sold',
+                status_available: 'Available',
+                status_sold: 'Sold'
+            },
+            zh: {
+                nav_home: '首页',
+                nav_community: '社区',
+                nav_merch: '周边',
+                sign_in: '登录',
+                sign_out: '退出登录',
+                hero_subtitle: 'TNT 海外粉丝站 · 为粉丝而生',
+                official_accounts: '官方账号',
+                cn_phone_required: '需中国手机号',
+                content_guide: '内容在哪里看',
+                show_onfire: '少年On Fire',
+                show_jiezhaoba: '接招吧！前辈',
+                show_camp: '时代夏令营',
+                show_stages: 'TNT舞台合集',
+                show_concert: '火力全开演唱会',
+                vip_required: '需VIP',
+                free: '免费',
+                watch_now: '观看',
+                translation_resources: '粉丝翻译资源',
+                resource_subtitles: '英文字幕视频',
+                resource_subtitles_desc: 'B站和YouTube粉丝上传',
+                resource_weibo: '微博热点翻译',
+                resource_weibo_desc: '每日微博动态翻译',
+                resource_members: '成员介绍指南',
+                resource_members_desc: '了解每位成员',
+                resource_cp: '花名CP科普',
+                resource_cp_desc: '粉丝昵称和CP指南',
+                schedule: '行程日历',
+                faq: '常见问题',
+                faq_who_q: 'TNT是谁？',
+                faq_who_a: 'TNT（时代少年团）是时代峰峻旗下的中国男子演唱组合，由马嘉祺、丁程鑫、宋亚轩、刘耀文、张真源、严浩翔、贺峻霖七位成员组成。',
+                faq_members_q: '成员有谁？',
+                faq_members_a: '马嘉祺（队长）、丁程鑫、宋亚轩、刘耀文、张真源、严浩翔、贺峻霖。',
+                faq_follow_q: '怎么追TNT？',
+                faq_follow_a: '关注官方微博、B站、YouTube账号，加入粉丝社区，查看本站的行程日历和内容指南。',
+                faq_watch_q: '怎么看综艺？',
+                faq_watch_a: '大部分综艺在芒果TV或腾讯视频播出，需要VIP会员。部分内容在B站免费观看。',
+                faq_merch_q: '怎么买周边？',
+                faq_merch_a: '官方周边通过T-FAMILY App购买，需要转运服务。详细步骤请查看"周边"页面。',
+                community_title: '社区',
+                new_post: '发帖',
+                back_to_community: '返回社区',
+                comments: '评论',
+                comment_placeholder: '写评论...',
+                comment: '评论',
+                please_sign_in_comment: '请登录后评论',
+                please_sign_in_post: '请登录后发帖。',
+                merch_title: '周边导购',
+                official_merch_guide: '官方周边购买指南',
+                step1_title: '访问T-FAMILY App',
+                step1_desc: '下载T-FAMILY App，这是官方海外粉丝平台。',
+                step2_title: '注册账号',
+                step2_desc: '需要中国手机号接收验证码。如果没有，可以使用虚拟号码服务。',
+                step3_title: '下单购买',
+                step3_desc: '选择商品，填写国内转运地址。',
+                step4_title: '转运到海外',
+                step4_desc: '推荐转运公司：Superbuy、Pandabuy、中通国际等。',
+                fan_merch: '自制周边推荐',
+                fan_art: '粉丝手绘',
+                fan_cards: '自制小卡',
+                fan_goods: '手工周边',
+                fan_merch_warning: '⚠️ 粉丝自制，非官方商品。购买前请自行判断。',
+                popular_merch: '当前热门周边',
+                merch_photobook: 'TNT 2026 写真集',
+                merch_lightstick: 'TNT 应援棒',
+                merch_cards: 'TNT 小卡套装',
+                official_link: '官方链接',
+                proxy_info: '代购信息汇总',
+                proxy1_name: '代购A',
+                proxy1_service: '周边代购、演唱会门票',
+                proxy1_contact: '微信: XXXXX',
+                proxy2_name: '代购B',
+                proxy2_service: '专辑代购、团购',
+                proxy2_contact: '微博: @XXXXX',
+                proxy3_name: '代购C',
+                proxy3_service: '现场代拍、应援物',
+                proxy3_contact: 'Twitter: @XXXXX',
+                proxy_warning: '此为粉丝整理信息，请自行核实。',
+                post_title_placeholder: '标题',
+                post_content_placeholder: '写点什么吧...',
+                post_hint: '💡 你可以用英文、中文或双语发帖！',
+                cancel: '取消',
+                post: '发布',
+                tag_discussion: '讨论',
+                tag_help: '求助',
+                tag_translation: '翻译',
+                tag_promo: '安利',
+                tag_share: '分享',
+                terms_title: '用户协议',
+                terms_age: '我已年满13周岁。',
+                terms_agree: '我已阅读并同意用户协议和免责声明。',
+                continue: '继续',
+                disclaimer: '',
+                disclaimer_zh: '⚠️ 免责声明：TNT Global Hub 为粉丝自发建立的社区平台。我们与时代峰峻、TNT或任何其官方实体均无关联。所有内容均为用户生成。我们不托管、不出售、也不担保任何商品。用户对自身交易承担全部责任。使用本平台即表示您同意TNT Global Hub不对因用户互动而产生的任何损失、纠纷或问题承担责任。在线与陌生人交易时请务必谨慎。',
+                regular_post: '普通帖子',
+                trading_post: '交易帖子',
+                price_placeholder: '价格',
+                upload_image: '上传商品图片',
+                condition_new: '全新',
+                condition_like_new: '几乎全新',
+                condition_lightly_used: '轻微使用痕迹',
+                condition_heavily_used: '有明显使用痕迹',
+                shipping: '邮寄',
+                meetup: '面交',
+                selling: '出售',
+                buying: '求购',
+                description_placeholder: '描述商品详情...',
+                trading_warning: '⚠️ 交易提醒：本平台仅提供信息展示，不参与任何交易。请通过私信联系对方，使用 PayPal Goods & Services 等有买家保护的方式付款。所有交易风险由用户自行承担。',
+                mark_sold: '标记为已出',
+                status_available: '待售',
+                status_sold: '已出'
+            }
+        };
+
+        // Sample data
+        const sampleSchedules = [
+            { date: '2026-08-15', event: '新专辑回归 / New Album Release', type: '回归' },
+            { date: '2026-08-20', event: '综艺录制 / Variety Show Recording', type: '综艺' },
+            { date: '2026-09-01', event: '线上演唱会 / Online Concert', type: '演唱会' }
+        ];
+
+        // State
+        let currentLang = localStorage.getItem('preferredLanguage') || 'en';
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let posts = JSON.parse(localStorage.getItem('tnt_posts')) || [];
+        let currentPostId = null;
+        let selectedPostType = 'regular';
+        let uploadedImageData = null;
+
+        // Initialize
+        function init() {
+            // Initialize posts if empty
+            if (posts.length === 0) {
+                posts = [{
+                    id: Date.now(),
+                    type: 'regular',
+                    title: '📌 Welcome New Fans! / 欢迎新粉！',
+                    content: 'Welcome to TNT Global Hub! This is a community for TNT fans around the world. Feel free to introduce yourself, share your favorite TNT moments, or ask questions. We\'re all here because we love TNT! 🎵\n\n欢迎来到TNT Global Hub！这是一个为全球TNT粉丝打造的社区。欢迎介绍自己、分享你最喜欢的TNT时刻，或者提问。我们聚在这里，都是因为喜欢TNT！🎵',
+                    author: 'TNT Global Hub',
+                    authorId: 'system',
+                    tag: 'Announcement / 公告',
+                    createdAt: Date.now(),
+                    isPinned: true,
+                    comments: [{
+                        id: Date.now() + 1,
+                        author: 'TNT Global Hub',
+                        authorId: 'system',
+                        content: 'Welcome everyone! 🎉 / 欢迎大家！🎉',
+                        createdAt: Date.now() + 1000
+                    }]
+                }];
+                localStorage.setItem('tnt_posts', JSON.stringify(posts));
+            }
+
+            // Initialize Google Identity Services
+            if (typeof google !== 'undefined' && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                google.accounts.id.initialize({
+                    client_id: CLIENT_ID,
+                    callback: handleCredentialResponse,
+                    auto_select: false
+                });
+            }
+
+            // Render
+            renderLanguage();
+            renderUserArea();
+            renderSchedule();
+            renderPosts();
+            bindEvents();
+        }
+
+        // Translation function
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        // Render language
+        function renderLanguage() {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.textContent = t(key);
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                el.placeholder = t(key);
+            });
+        }
+
+        // Switch language
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('preferredLanguage', lang);
+            renderLanguage();
+        }
+
+        // Render user area
+        function renderUserArea() {
+            const userArea = document.getElementById('user-area');
+            const userDropdown = document.getElementById('user-dropdown');
+
+            if (currentUser) {
+                userArea.innerHTML = `
+                    <div class="user-area">
+                        <img src="${currentUser.userAvatar}" alt="${currentUser.userName}" class="user-avatar">
+                        <span class="user-name">${currentUser.userName}</span>
+                    </div>
+                `;
+                userDropdown.querySelector('.dropdown-user-name').textContent = currentUser.userName;
+                userDropdown.querySelector('.dropdown-user-email').textContent = currentUser.userEmail;
+            } else {
+                userArea.innerHTML = `<button class="login-btn">${t('sign_in')}</button>`;
+                userDropdown.classList.remove('show');
+            }
+        }
+
+        // Render schedule
+        function renderSchedule() {
+            const scheduleList = document.getElementById('schedule-list');
+            scheduleList.innerHTML = sampleSchedules.map(item => {
+                const tagClass = {
+                    '回归': 'tag-comeback',
+                    '综艺': 'tag-variety',
+                    '演唱会': 'tag-concert',
+                    '直播': 'tag-live'
+                }[item.type] || 'tag-comeback';
+
+                return `
+                    <div class="schedule-item">
+                        <span class="schedule-date">${item.date}</span>
+                        <span class="schedule-event">${item.event}</span>
+                        <span class="schedule-tag ${tagClass}">${item.type}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render posts
+        function renderPosts() {
+            const feed = document.getElementById('community-feed');
+            const sortedPosts = [...posts].sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                return b.createdAt - a.createdAt;
+            });
+
+            feed.innerHTML = sortedPosts.map(post => {
+                if (post.type === 'trading') {
+                    return renderTradingPostCard(post);
+                } else {
+                    return renderRegularPostCard(post);
+                }
+            }).join('');
+        }
+
+        // Render regular post card
+        function renderRegularPostCard(post) {
+            const tagClass = {
+                '讨论 / Discussion': 'tag-discussion',
+                '求助 / Help': 'tag-help',
+                '翻译 / Translation': 'tag-translation',
+                '安利 / Promotion': 'tag-promo',
+                '分享 / Share': 'tag-share',
+                'Announcement / 公告': 'tag-announcement'
+            }[post.tag] || 'tag-discussion';
+
+            const timeAgo = getTimeAgo(post.createdAt);
+            const commentCount = post.comments ? post.comments.length : 0;
+
+            return `
+                <div class="post-card ${post.isPinned ? 'pinned' : ''}" data-post-id="${post.id}">
+                    <h3 class="post-title">${post.title}</h3>
+                    <div class="post-meta">
+                        <span>@${post.author}</span>
+                        <span class="post-tag ${tagClass}">${post.tag}</span>
+                        <span>${timeAgo}</span>
+                    </div>
+                    <p class="post-content">${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}</p>
+                    <div class="post-footer">
+                        <span><i class="fas fa-comment"></i> ${commentCount} ${t('comments')}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render trading post card
+        function renderTradingPostCard(post) {
+            const timeAgo = getTimeAgo(post.createdAt);
+            const statusClass = post.status === '待售 / Available' ? 'available' : 'sold';
+            const statusText = post.status === '待售 / Available' ? t('status_available') : t('status_sold');
+            const typeText = post.tradeType === 'selling' ? t('selling') : t('buying');
+
+            return `
+                <div class="post-card trading ${post.tradeType}" data-post-id="${post.id}">
+                    <img src="${post.image || 'https://via.placeholder.com/80x80/1C1C2E/FACC15?text=No+Image'}" alt="Product" class="trading-image">
+                    <div class="trading-info">
+                        <h3 class="post-title">${post.title}</h3>
+                        <div class="trading-price">$${post.price}</div>
+                        <div class="post-meta">
+                            <span>@${post.author}</span>
+                            <span>${timeAgo}</span>
+                        </div>
+                        <div class="trading-tags">
+                            <span class="trading-tag ${post.tradeType}">${typeText}</span>
+                            <span class="trading-status ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get time ago string
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                week: 604800,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInUnit);
+                if (interval >= 1) {
+                    return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
+                }
+            }
+            return 'Just now';
+        }
+
+        // Show post detail
+        function showPostDetail(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            currentPostId = postId;
+            const detailContent = document.getElementById('detail-content');
+            const commentsList = document.getElementById('comments-list');
+
+            if (post.type === 'trading') {
+                renderTradingPostDetail(post, detailContent);
+            } else {
+                renderRegularPostDetail(post, detailContent);
+            }
+
+            commentsList.innerHTML = (post.comments || []).map(comment => `
+                <div class="comment-item">
+                    <div class="comment-author">@${comment.author}</div>
+                    <div class="comment-time">${getTimeAgo(comment.createdAt)}</div>
+                    <div class="comment-content">${comment.content}</div>
+                </div>
+            `).join('');
+
+            // Update comment input area
+            const commentInputArea = document.getElementById('comment-input-area');
+            const commentLoginPrompt = document.getElementById('comment-login-prompt');
+
+            if (currentUser) {
+                commentInputArea.style.display = 'block';
+                commentLoginPrompt.style.display = 'none';
+            } else {
+                commentInputArea.style.display = 'none';
+                commentLoginPrompt.style.display = 'block';
+            }
+
+            document.getElementById('community-feed').style.display = 'none';
+            document.getElementById('post-detail').classList.add('show');
+        }
+
+        // Render regular post detail
+        function renderRegularPostDetail(post, container) {
+            const tagClass = {
+                '讨论 / Discussion': 'tag-discussion',
+                '求助 / Help': 'tag-help',
+                '翻译 / Translation': 'tag-translation',
+                '安利 / Promotion': 'tag-promo',
+                '分享 / Share': 'tag-share',
+                'Announcement / 公告': 'tag-announcement'
+            }[post.tag] || 'tag-discussion';
+
+            container.innerHTML = `
+                <h1 class="detail-title">${post.title}</h1>
+                <div class="detail-meta">
+                    <span>@${post.author}</span>
+                    <span class="post-tag ${tagClass}">${post.tag}</span>
+                    <span>${getTimeAgo(post.createdAt)}</span>
+                </div>
+                <div class="detail-content">${post.content.replace(/\n/g, '<br>')}</div>
+            `;
+        }
+
+        // Render trading post detail
+        function renderTradingPostDetail(post, container) {
+            const statusClass = post.status === '待售 / Available' ? 'available' : 'sold';
+            const statusText = post.status === '待售 / Available' ? t('status_available') : t('status_sold');
+            const typeText = post.tradeType === 'selling' ? t('selling') : t('buying');
+            const isOwner = currentUser && currentUser.userId === post.authorId;
+
+            container.innerHTML = `
+                <img src="${post.image || 'https://via.placeholder.com/400x400/1C1C2E/FACC15?text=No+Image'}" alt="Product" class="trading-detail-image">
+                <div class="trading-detail-price">$${post.price}</div>
+                <h1 class="detail-title">${post.title}</h1>
+                <div class="trading-detail-info">
+                    <p><strong>${t('selling')} / ${t('buying')}:</strong> ${typeText}</p>
+                    <p><strong>@${post.author}</strong></p>
+                    <p><strong data-i18n="condition_new">新旧程度:</strong> ${post.condition}</p>
+                    <p><strong data-i18n="shipping">交易方式:</strong> ${post.shipping}</p>
+                </div>
+                <div class="detail-content">${post.description.replace(/\n/g, '<br>')}</div>
+                <div class="trading-tags">
+                    <span class="trading-status ${statusClass}">${statusText}</span>
+                </div>
+                ${isOwner ? `<button class="mark-sold-btn" data-i18n="mark_sold">${t('mark_sold')}</button>` : ''}
+                <div class="trading-warning">
+                    <strong data-i18n="trading_warning">${t('trading_warning')}</strong>
+                </div>
+            `;
+
+            // Bind mark as sold button
+            if (isOwner) {
+                container.querySelector('.mark-sold-btn').addEventListener('click', () => {
+                    post.status = '已出 / Sold';
+                    localStorage.setItem('tnt_posts', JSON.stringify(posts));
+                    showPostDetail(post.id);
+                    renderPosts();
+                });
+            }
+        }
+
+        // Hide post detail
+        function hidePostDetail() {
+            currentPostId = null;
+            document.getElementById('community-feed').style.display = 'block';
+            document.getElementById('post-detail').classList.remove('show');
+        }
+
+        // Add comment
+        function addComment(content) {
+            if (!currentUser || !currentPostId) return;
+
+            const post = posts.find(p => p.id === currentPostId);
+            if (!post) return;
+
+            if (!post.comments) post.comments = [];
+
+            post.comments.push({
+                id: Date.now(),
+                author: currentUser.userName,
+                authorId: currentUser.userId,
+                content: content,
+                createdAt: Date.now()
+            });
+
+            localStorage.setItem('tnt_posts', JSON.stringify(posts));
+            showPostDetail(currentPostId);
+            renderPosts();
+        }
+
+        // Create regular post
+        function createRegularPost(title, content, tag) {
+            if (!currentUser) return;
+
+            const newPost = {
+                id: Date.now(),
+                type: 'regular',
+                title: title,
+                content: content,
+                author: currentUser.userName,
+                authorId: currentUser.userId,
+                tag: tag,
+                createdAt: Date.now(),
+                comments: []
+            };
+
+            posts.push(newPost);
+            localStorage.setItem('tnt_posts', JSON.stringify(posts));
+            renderPosts();
+        }
+
+        // Create trading post
+        function createTradingPost(title, price, image, condition, shipping, tradeType, description) {
+            if (!currentUser) return;
+
+            const newPost = {
+                id: Date.now(),
+                type: 'trading',
+                title: title,
+                price: price,
+                image: image,
+                condition: condition,
+                shipping: shipping,
+                tradeType: tradeType,
+                description: description,
+                author: currentUser.userName,
+                authorId: currentUser.userId,
+                status: '待售 / Available',
+                createdAt: Date.now(),
+                comments: []
+            };
+
+            posts.push(newPost);
+            localStorage.setItem('tnt_posts', JSON.stringify(posts));
+            renderPosts();
+        }
+
+        // Handle Google credential response
+        function handleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+
+            currentUser = {
+                userId: payload.sub,
+                userName: payload.name,
+                userEmail: payload.email,
+                userAvatar: payload.picture,
+                loginTime: Date.now()
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            renderUserArea();
+            closeModal('terms-modal');
+            closeModal('login-prompt');
+        }
+
+        // Parse JWT
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        // Sign out
+        function signOut() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            renderUserArea();
+            document.getElementById('user-dropdown').classList.remove('show');
+        }
+
+        // Show modal
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Show terms modal before login
+        function showTermsAndLogin() {
+            const termsAccepted = localStorage.getItem('termsAccepted');
+            
+            if (termsAccepted) {
+                triggerGoogleLogin();
+            } else {
+                showModal('terms-modal');
+            }
+        }
+
+        // Trigger Google login
+        function triggerGoogleLogin() {
+            if (typeof google !== 'undefined' && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        console.log('Google prompt not displayed');
+                    }
+                });
+            } else {
+                alert('Please configure your Google Client ID in the code.');
+            }
+        }
+
+        // Bind events
+        function bindEvents() {
+            // Language switch
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.dataset.page;
+                    
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById(`page-${page}`).classList.add('active');
+
+                    if (page !== 'community') {
+                        hidePostDetail();
+                    }
+                });
+            });
+
+            // Login button
+            document.getElementById('user-area').addEventListener('click', (e) => {
+                if (e.target.classList.contains('login-btn')) {
+                    showTermsAndLogin();
+                } else if (e.target.closest('.user-area')) {
+                    if (currentUser) {
+                        document.getElementById('user-dropdown').classList.toggle('show');
+                    }
+                }
+            });
+
+            // Sign out
+            document.querySelector('.signout-btn').addEventListener('click', signOut);
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.user-area')) {
+                    document.getElementById('user-dropdown').classList.remove('show');
+                }
+            });
+
+            // New post button
+            document.querySelector('.new-post-btn').addEventListener('click', () => {
+                if (currentUser) {
+                    showModal('post-modal');
+                } else {
+                    showModal('login-prompt');
+                }
+            });
+
+            // Post type selection
+            document.querySelectorAll('.post-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedPostType = btn.dataset.type;
+
+                    if (selectedPostType === 'regular') {
+                        document.getElementById('regular-post-form').style.display = 'block';
+                        document.getElementById('trading-post-form').style.display = 'none';
+                    } else {
+                        document.getElementById('regular-post-form').style.display = 'none';
+                        document.getElementById('trading-post-form').style.display = 'block';
+                    }
+                });
+            });
+
+            // Image upload
+            document.getElementById('image-upload-btn').addEventListener('click', () => {
+                document.getElementById('image-input').click();
+            });
+
+            document.getElementById('image-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        uploadedImageData = event.target.result;
+                        const preview = document.getElementById('image-preview');
+                        preview.src = uploadedImageData;
+                        preview.classList.add('show');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Post modal
+            document.querySelector('#post-modal .modal-btn-secondary').addEventListener('click', () => {
+                closeModal('post-modal');
+                resetPostModal();
+            });
+
+            document.querySelector('#post-modal .modal-btn-primary').addEventListener('click', () => {
+                if (selectedPostType === 'regular') {
+                    const title = document.querySelector('#regular-post-form .modal-input').value;
+                    const content = document.querySelector('#regular-post-form .modal-textarea').value;
+                    const tag = document.getElementById('post-tag-select').value;
+
+                    if (title && content) {
+                        createRegularPost(title, content, tag);
+                        closeModal('post-modal');
+                        resetPostModal();
+                    }
+                } else {
+                    const title = document.getElementById('trading-title').value;
+                    const price = document.getElementById('trading-price').value;
+                    const condition = document.getElementById('trading-condition').value;
+                    const shipping = document.getElementById('trading-shipping').value;
+                    const tradeType = document.getElementById('trading-type').value;
+                    const description = document.getElementById('trading-description').value;
+
+                    if (title && price) {
+                        createTradingPost(title, price, uploadedImageData, condition, shipping, tradeType, description);
+                        closeModal('post-modal');
+                        resetPostModal();
+                    }
+                }
+            });
+
+            // Reset post modal
+            function resetPostModal() {
+                document.querySelector('#regular-post-form .modal-input').value = '';
+                document.querySelector('#regular-post-form .modal-textarea').value = '';
+                document.getElementById('trading-title').value = '';
+                document.getElementById('trading-price').value = '';
+                document.getElementById('trading-description').value = '';
+                document.getElementById('image-preview').classList.remove('show');
+                uploadedImageData = null;
+                selectedPostType = 'regular';
+                document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('.post-type-btn[data-type="regular"]').classList.add('active');
+                document.getElementById('regular-post-form').style.display = 'block';
+                document.getElementById('trading-post-form').style.display = 'none';
+            }
+
+            // Login prompt
+            document.getElementById('prompt-signin-btn').addEventListener('click', () => {
+                closeModal('login-prompt');
+                showTermsAndLogin();
+            });
+
+            // Post cards
+            document.getElementById('community-feed').addEventListener('click', (e) => {
+                const postCard = e.target.closest('.post-card');
+                if (postCard) {
+                    showPostDetail(parseInt(postCard.dataset.postId));
+                }
+            });
+
+            // Back button
+            document.querySelector('.back-btn').addEventListener('click', hidePostDetail);
+
+            // Comment submit
+            document.querySelector('.comment-submit').addEventListener('click', () => {
+                const content = document.querySelector('.comment-input').value;
+                if (content) {
+                    addComment(content);
+                    document.querySelector('.comment-input').value = '';
+                }
+            });
+
+            // Comment login prompt
+            document.querySelector('#comment-login-prompt .login-btn').addEventListener('click', () => {
+                showTermsAndLogin();
+            });
+
+            // FAQ toggle
+            document.querySelectorAll('.faq-question').forEach(question => {
+                question.addEventListener('click', () => {
+                    question.closest('.faq-item').classList.toggle('open');
+                });
+            });
+
+            // Terms modal
+            document.getElementById('terms-cancel').addEventListener('click', () => {
+                closeModal('terms-modal');
+            });
+
+            document.getElementById('terms-age').addEventListener('change', checkTermsCheckboxes);
+            document.getElementById('terms-agree').addEventListener('change', checkTermsCheckboxes);
+
+            document.getElementById('terms-continue').addEventListener('click', () => {
+                localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, timestamp: Date.now() }));
+                closeModal('terms-modal');
+                triggerGoogleLogin();
+            });
+
+            // Close modals on background click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+        }
+
+        // Check terms checkboxes
+        function checkTermsCheckboxes() {
+            const ageChecked = document.getElementById('terms-age').checked;
+            const agreeChecked = document.getElementById('terms-agree').checked;
+            document.getElementById('terms-continue').disabled = !(ageChecked && agreeChecked);
+        }
+
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
