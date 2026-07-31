@@ -1607,6 +1607,7 @@
                     <i class="fas fa-lock"></i>
                 </div>
                 <h2 class="modal-title" data-i18n="please_sign_in_post">Please sign in to create a post. / 请登录后发帖。</h2>
+                <div id="google-signin-button" style="margin: 20px 0;"></div>
                 <div class="modal-actions" style="justify-content: center;">
                     <button class="modal-btn modal-btn-primary" id="prompt-signin-btn" data-i18n="sign_in">Sign In / 登录</button>
                 </div>
@@ -1674,7 +1675,7 @@
 
     <script>
         // Google OAuth Client ID - Replace with your actual client ID from Google Cloud Console
-        const CLIENT_ID = '683900832087-8q7i1ncuqh7pqgrbnll0ejkb0cfvsgvq.apps.googleusercontent.com';
+        const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE'; // IMPORTANT: Replace this with your actual Google Client ID
 
         // Translations
         const translations = {
@@ -1918,9 +1919,32 @@
         let currentPostId = null;
         let selectedPostType = 'regular';
         let uploadedImageData = null;
+        let pendingPostAction = false;
+        const DEBUG_MODE = true; // Set to false for production
+
+        // Debug logging helper
+        function debugLog(message, data = null) {
+            if (DEBUG_MODE) {
+                console.log(`[TNT Debug] ${message}`, data || '');
+            }
+        }
 
         // Initialize
         function init() {
+            debugLog('Initializing TNT Global Hub...');
+            
+            // Check for existing user session
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    debugLog('User session restored', currentUser.userName);
+                } catch (e) {
+                    debugLog('Error parsing saved user', e);
+                    localStorage.removeItem('currentUser');
+                }
+            }
+
             // Initialize posts if empty
             if (posts.length === 0) {
                 posts = [{
@@ -1942,15 +1966,24 @@
                     }]
                 }];
                 localStorage.setItem('tnt_posts', JSON.stringify(posts));
+                debugLog('Initialized default posts');
             }
 
             // Initialize Google Identity Services
-            if (typeof google !== 'undefined' && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
-                google.accounts.id.initialize({
-                    client_id: CLIENT_ID,
-                    callback: handleCredentialResponse,
-                    auto_select: false
-                });
+            if (typeof google !== 'undefined') {
+                if (CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                    google.accounts.id.initialize({
+                        client_id: CLIENT_ID,
+                        callback: handleCredentialResponse,
+                        auto_select: false,
+                        ux_mode: 'popup'
+                    });
+                    debugLog('Google Identity Services initialized');
+                } else {
+                    debugLog('Google CLIENT_ID not configured');
+                }
+            } else {
+                debugLog('Google Identity Services not loaded');
             }
 
             // Render
@@ -1959,6 +1992,8 @@
             renderSchedule();
             renderPosts();
             bindEvents();
+            
+            debugLog('TNT Global Hub initialized successfully');
         }
 
         // Translation function
@@ -2085,6 +2120,7 @@
             const statusClass = post.status === '待售 / Available' ? 'available' : 'sold';
             const statusText = post.status === '待售 / Available' ? t('status_available') : t('status_sold');
             const typeText = post.tradeType === 'selling' ? t('selling') : t('buying');
+            const commentCount = post.comments ? post.comments.length : 0;
 
             return `
                 <div class="post-card trading ${post.tradeType}" data-post-id="${post.id}">
@@ -2099,6 +2135,9 @@
                         <div class="trading-tags">
                             <span class="trading-tag ${post.tradeType}">${typeText}</span>
                             <span class="trading-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="post-footer">
+                            <span><i class="fas fa-comment"></i> ${commentCount} ${t('comments')}</span>
                         </div>
                     </div>
                 </div>
@@ -2208,20 +2247,26 @@
                 <div class="trading-tags">
                     <span class="trading-status ${statusClass}">${statusText}</span>
                 </div>
-                ${isOwner ? `<button class="mark-sold-btn" data-i18n="mark_sold">${t('mark_sold')}</button>` : ''}
+                ${isOwner && post.status === '待售 / Available' ? `<button class="mark-sold-btn" data-i18n="mark_sold">${t('mark_sold')}</button>` : ''}
                 <div class="trading-warning">
                     <strong data-i18n="trading_warning">${t('trading_warning')}</strong>
                 </div>
             `;
 
             // Bind mark as sold button
-            if (isOwner) {
-                container.querySelector('.mark-sold-btn').addEventListener('click', () => {
-                    post.status = '已出 / Sold';
-                    localStorage.setItem('tnt_posts', JSON.stringify(posts));
-                    showPostDetail(post.id);
-                    renderPosts();
-                });
+            if (isOwner && post.status === '待售 / Available') {
+                const markSoldBtn = container.querySelector('.mark-sold-btn');
+                if (markSoldBtn) {
+                    markSoldBtn.addEventListener('click', () => {
+                        if (confirm('Are you sure you want to mark this item as sold? / 确定要标记此商品为已出吗？')) {
+                            post.status = '已出 / Sold';
+                            localStorage.setItem('tnt_posts', JSON.stringify(posts));
+                            console.log('Post marked as sold:', post.id);
+                            showPostDetail(post.id);
+                            renderPosts();
+                        }
+                    });
+                }
             }
         }
 
@@ -2234,24 +2279,38 @@
 
         // Add comment
         function addComment(content) {
-            if (!currentUser || !currentPostId) return;
+            if (!currentUser || !currentPostId) {
+                    debugLog('Cannot add comment: user not logged in or no post selected');
+                return;
+            }
 
             const post = posts.find(p => p.id === currentPostId);
-            if (!post) return;
+            if (!post) {
+                console.error('Post not found:', currentPostId);
+                return;
+            }
 
             if (!post.comments) post.comments = [];
 
-            post.comments.push({
+            const newComment = {
                 id: Date.now(),
                 author: currentUser.userName,
                 authorId: currentUser.userId,
                 content: content,
                 createdAt: Date.now()
-            });
+            };
 
-            localStorage.setItem('tnt_posts', JSON.stringify(posts));
-            showPostDetail(currentPostId);
-            renderPosts();
+            post.comments.push(newComment);
+            
+            try {
+                localStorage.setItem('tnt_posts', JSON.stringify(posts));
+                console.log('Comment added successfully');
+                showPostDetail(currentPostId);
+                renderPosts();
+            } catch (e) {
+                console.error('Error saving comment:', e);
+                alert('Error saving comment. Please try again.');
+            }
         }
 
         // Create regular post
@@ -2303,20 +2362,33 @@
 
         // Handle Google credential response
         function handleCredentialResponse(response) {
-            const payload = parseJwt(response.credential);
+            debugLog('Google credential response received');
+            try {
+                const payload = parseJwt(response.credential);
 
-            currentUser = {
-                userId: payload.sub,
-                userName: payload.name,
-                userEmail: payload.email,
-                userAvatar: payload.picture,
-                loginTime: Date.now()
-            };
+                currentUser = {
+                    userId: payload.sub,
+                    userName: payload.name,
+                    userEmail: payload.email,
+                    userAvatar: payload.picture,
+                    loginTime: Date.now()
+                };
 
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            renderUserArea();
-            closeModal('terms-modal');
-            closeModal('login-prompt');
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                debugLog('User logged in', currentUser.userName);
+                renderUserArea();
+                closeModal('terms-modal');
+                closeModal('login-prompt');
+                
+                // If user was trying to post, open the post modal
+                if (pendingPostAction) {
+                    pendingPostAction = false;
+                    showModal('post-modal');
+                }
+            } catch (e) {
+                debugLog('Error handling credential response', e);
+                alert('Login failed. Please try again.');
+            }
         }
 
         // Parse JWT
@@ -2361,13 +2433,25 @@
         // Trigger Google login
         function triggerGoogleLogin() {
             if (typeof google !== 'undefined' && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                // Use the Google One Tap popup
                 google.accounts.id.prompt((notification) => {
                     if (notification.isNotDisplayed()) {
-                        console.log('Google prompt not displayed');
+                        debugLog('Google prompt not displayed, trying popup');
+                        // If prompt doesn't work, try to show the popup manually
+                        try {
+                            google.accounts.id.renderButton(
+                                document.getElementById('google-signin-button'),
+                                { theme: 'outline', size: 'large' }
+                            );
+                        } catch (e) {
+                            debugLog('Google login error', e);
+                            alert('Google login is not properly configured. Please check your CLIENT_ID.');
+                        }
                     }
                 });
             } else {
-                alert('Please configure your Google Client ID in the code.');
+                debugLog('Google CLIENT_ID not configured');
+                alert('Please configure your Google Client ID in the code. Current value: ' + CLIENT_ID);
             }
         }
 
@@ -2397,18 +2481,32 @@
             });
 
             // Login button
-            document.getElementById('user-area').addEventListener('click', (e) => {
-                if (e.target.classList.contains('login-btn')) {
-                    showTermsAndLogin();
-                } else if (e.target.closest('.user-area')) {
-                    if (currentUser) {
-                        document.getElementById('user-dropdown').classList.toggle('show');
+            const userArea = document.getElementById('user-area');
+            if (userArea) {
+                userArea.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('login-btn')) {
+                        debugLog('Login button clicked');
+                        showTermsAndLogin();
+                    } else if (e.target.closest('.user-area')) {
+                        if (currentUser) {
+                            const userDropdown = document.getElementById('user-dropdown');
+                            if (userDropdown) {
+                                userDropdown.classList.toggle('show');
+                            }
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                debugLog('User area element not found');
+            }
 
             // Sign out
-            document.querySelector('.signout-btn').addEventListener('click', signOut);
+            const signoutBtn = document.querySelector('.signout-btn');
+            if (signoutBtn) {
+                signoutBtn.addEventListener('click', signOut);
+            } else {
+                debugLog('Sign out button not found');
+            }
 
             // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
@@ -2422,146 +2520,253 @@
                 if (currentUser) {
                     showModal('post-modal');
                 } else {
+                    pendingPostAction = true;
                     showModal('login-prompt');
                 }
             });
 
             // Post type selection
-            document.querySelectorAll('.post-type-btn').forEach(btn => {
+            const postTypeBtns = document.querySelectorAll('.post-type-btn');
+            postTypeBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
+                    postTypeBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     selectedPostType = btn.dataset.type;
+                    debugLog('Post type selected', selectedPostType);
 
-                    if (selectedPostType === 'regular') {
-                        document.getElementById('regular-post-form').style.display = 'block';
-                        document.getElementById('trading-post-form').style.display = 'none';
+                    const regularForm = document.getElementById('regular-post-form');
+                    const tradingForm = document.getElementById('trading-post-form');
+                    
+                    if (regularForm && tradingForm) {
+                        if (selectedPostType === 'regular') {
+                            regularForm.style.display = 'block';
+                            tradingForm.style.display = 'none';
+                        } else {
+                            regularForm.style.display = 'none';
+                            tradingForm.style.display = 'block';
+                        }
                     } else {
-                        document.getElementById('regular-post-form').style.display = 'none';
-                        document.getElementById('trading-post-form').style.display = 'block';
+                        debugLog('Post form elements not found');
                     }
                 });
             });
 
             // Image upload
-            document.getElementById('image-upload-btn').addEventListener('click', () => {
-                document.getElementById('image-input').click();
-            });
+            const imageUploadBtn = document.getElementById('image-upload-btn');
+            const imageInput = document.getElementById('image-input');
+            
+            if (imageUploadBtn && imageInput) {
+                imageUploadBtn.addEventListener('click', () => {
+                    imageInput.click();
+                });
 
-            document.getElementById('image-input').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        uploadedImageData = event.target.result;
-                        const preview = document.getElementById('image-preview');
-                        preview.src = uploadedImageData;
-                        preview.classList.add('show');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+                imageInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        debugLog('Image selected', file.name);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            uploadedImageData = event.target.result;
+                            const preview = document.getElementById('image-preview');
+                            preview.src = uploadedImageData;
+                            preview.classList.add('show');
+                            debugLog('Image uploaded successfully');
+                        };
+                        reader.onerror = (e) => {
+                            debugLog('Error reading file', e);
+                            alert('Error uploading image. Please try again.');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            } else {
+                debugLog('Image upload elements not found');
+            }
 
             // Post modal
-            document.querySelector('#post-modal .modal-btn-secondary').addEventListener('click', () => {
-                closeModal('post-modal');
-                resetPostModal();
-            });
+            const postModalCancel = document.querySelector('#post-modal .modal-btn-secondary');
+            const postModalSubmit = document.querySelector('#post-modal .modal-btn-primary');
+            
+            if (postModalCancel) {
+                postModalCancel.addEventListener('click', () => {
+                    closeModal('post-modal');
+                    resetPostModal();
+                });
+            }
 
-            document.querySelector('#post-modal .modal-btn-primary').addEventListener('click', () => {
-                if (selectedPostType === 'regular') {
-                    const title = document.querySelector('#regular-post-form .modal-input').value;
-                    const content = document.querySelector('#regular-post-form .modal-textarea').value;
-                    const tag = document.getElementById('post-tag-select').value;
+            if (postModalSubmit) {
+                postModalSubmit.addEventListener('click', () => {
+                    if (selectedPostType === 'regular') {
+                        const title = document.querySelector('#regular-post-form .modal-input');
+                        const content = document.querySelector('#regular-post-form .modal-textarea');
+                        const tag = document.getElementById('post-tag-select');
 
-                    if (title && content) {
-                        createRegularPost(title, content, tag);
-                        closeModal('post-modal');
-                        resetPostModal();
+                        if (title && content && tag) {
+                            if (title.value.trim() && content.value.trim()) {
+                                debugLog('Creating regular post', title.value);
+                                createRegularPost(title.value.trim(), content.value.trim(), tag.value);
+                                closeModal('post-modal');
+                                resetPostModal();
+                            } else {
+                                alert('Please fill in all fields / 请填写所有字段');
+                            }
+                        }
+                    } else {
+                        const title = document.getElementById('trading-title');
+                        const price = document.getElementById('trading-price');
+                        const condition = document.getElementById('trading-condition');
+                        const shipping = document.getElementById('trading-shipping');
+                        const tradeType = document.getElementById('trading-type');
+                        const description = document.getElementById('trading-description');
+
+                        if (title && price && condition && shipping && tradeType && description) {
+                            if (title.value.trim() && price.value.trim()) {
+                                debugLog('Creating trading post', { title: title.value, price: price.value });
+                                createTradingPost(
+                                    title.value.trim(), 
+                                    price.value.trim(), 
+                                    uploadedImageData, 
+                                    condition.value, 
+                                    shipping.value, 
+                                    tradeType.value, 
+                                    description.value.trim()
+                                );
+                                closeModal('post-modal');
+                                resetPostModal();
+                            } else {
+                                alert('Please fill in title and price / 请填写标题和价格');
+                            }
+                        } else {
+                            console.error('Trading form elements not found');
+                        }
                     }
-                } else {
-                    const title = document.getElementById('trading-title').value;
-                    const price = document.getElementById('trading-price').value;
-                    const condition = document.getElementById('trading-condition').value;
-                    const shipping = document.getElementById('trading-shipping').value;
-                    const tradeType = document.getElementById('trading-type').value;
-                    const description = document.getElementById('trading-description').value;
-
-                    if (title && price) {
-                        createTradingPost(title, price, uploadedImageData, condition, shipping, tradeType, description);
-                        closeModal('post-modal');
-                        resetPostModal();
-                    }
-                }
-            });
+                });
+            }
 
             // Reset post modal
             function resetPostModal() {
-                document.querySelector('#regular-post-form .modal-input').value = '';
-                document.querySelector('#regular-post-form .modal-textarea').value = '';
-                document.getElementById('trading-title').value = '';
-                document.getElementById('trading-price').value = '';
-                document.getElementById('trading-description').value = '';
-                document.getElementById('image-preview').classList.remove('show');
+                const regularInput = document.querySelector('#regular-post-form .modal-input');
+                const regularTextarea = document.querySelector('#regular-post-form .modal-textarea');
+                const tradingTitle = document.getElementById('trading-title');
+                const tradingPrice = document.getElementById('trading-price');
+                const tradingDescription = document.getElementById('trading-description');
+                const imagePreview = document.getElementById('image-preview');
+                const regularForm = document.getElementById('regular-post-form');
+                const tradingForm = document.getElementById('trading-post-form');
+                
+                if (regularInput) regularInput.value = '';
+                if (regularTextarea) regularTextarea.value = '';
+                if (tradingTitle) tradingTitle.value = '';
+                if (tradingPrice) tradingPrice.value = '';
+                if (tradingDescription) tradingDescription.value = '';
+                if (imagePreview) imagePreview.classList.remove('show');
+                
                 uploadedImageData = null;
                 selectedPostType = 'regular';
+                
                 document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector('.post-type-btn[data-type="regular"]').classList.add('active');
-                document.getElementById('regular-post-form').style.display = 'block';
-                document.getElementById('trading-post-form').style.display = 'none';
+                const regularPostTypeBtn = document.querySelector('.post-type-btn[data-type="regular"]');
+                if (regularPostTypeBtn) regularPostTypeBtn.classList.add('active');
+                
+                if (regularForm) regularForm.style.display = 'block';
+                if (tradingForm) tradingForm.style.display = 'none';
+                
+                debugLog('Post modal reset');
             }
 
             // Login prompt
-            document.getElementById('prompt-signin-btn').addEventListener('click', () => {
-                closeModal('login-prompt');
-                showTermsAndLogin();
-            });
+            const promptSigninBtn = document.getElementById('prompt-signin-btn');
+            if (promptSigninBtn) {
+                promptSigninBtn.addEventListener('click', () => {
+                    closeModal('login-prompt');
+                    showTermsAndLogin();
+                });
+            } else {
+                debugLog('Prompt signin button not found');
+            }
 
             // Post cards
-            document.getElementById('community-feed').addEventListener('click', (e) => {
-                const postCard = e.target.closest('.post-card');
-                if (postCard) {
-                    showPostDetail(parseInt(postCard.dataset.postId));
-                }
-            });
+            const communityFeed = document.getElementById('community-feed');
+            if (communityFeed) {
+                communityFeed.addEventListener('click', (e) => {
+                    const postCard = e.target.closest('.post-card');
+                    if (postCard) {
+                        const postId = parseInt(postCard.dataset.postId);
+                        debugLog('Post card clicked', postId);
+                        showPostDetail(postId);
+                    }
+                });
+            } else {
+                debugLog('Community feed element not found');
+            }
 
             // Back button
-            document.querySelector('.back-btn').addEventListener('click', hidePostDetail);
+            const backBtn = document.querySelector('.back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', hidePostDetail);
+            } else {
+                debugLog('Back button not found');
+            }
 
             // Comment submit
-            document.querySelector('.comment-submit').addEventListener('click', () => {
-                const content = document.querySelector('.comment-input').value;
-                if (content) {
-                    addComment(content);
-                    document.querySelector('.comment-input').value = '';
-                }
-            });
+            const commentSubmitBtn = document.querySelector('.comment-submit');
+            const commentInput = document.querySelector('.comment-input');
+            
+            if (commentSubmitBtn && commentInput) {
+                commentSubmitBtn.addEventListener('click', () => {
+                    const content = commentInput.value.trim();
+                    if (content) {
+                        debugLog('Submitting comment', content);
+                        addComment(content);
+                        commentInput.value = '';
+                    } else {
+                        alert('Please enter a comment / 请输入评论内容');
+                    }
+                });
+            } else {
+                debugLog('Comment input elements not found');
+            }
 
             // Comment login prompt
-            document.querySelector('#comment-login-prompt .login-btn').addEventListener('click', () => {
-                showTermsAndLogin();
-            });
+            const commentLoginBtn = document.querySelector('#comment-login-prompt .login-btn');
+            if (commentLoginBtn) {
+                commentLoginBtn.addEventListener('click', () => {
+                    showTermsAndLogin();
+                });
+            }
 
             // FAQ toggle
-            document.querySelectorAll('.faq-question').forEach(question => {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
                 question.addEventListener('click', () => {
                     question.closest('.faq-item').classList.toggle('open');
                 });
             });
 
             // Terms modal
-            document.getElementById('terms-cancel').addEventListener('click', () => {
-                closeModal('terms-modal');
-            });
+            const termsCancel = document.getElementById('terms-cancel');
+            const termsAge = document.getElementById('terms-age');
+            const termsAgree = document.getElementById('terms-agree');
+            const termsContinue = document.getElementById('terms-continue');
+            
+            if (termsCancel) {
+                termsCancel.addEventListener('click', () => {
+                    closeModal('terms-modal');
+                });
+            }
 
-            document.getElementById('terms-age').addEventListener('change', checkTermsCheckboxes);
-            document.getElementById('terms-agree').addEventListener('change', checkTermsCheckboxes);
+            if (termsAge && termsAgree) {
+                termsAge.addEventListener('change', checkTermsCheckboxes);
+                termsAgree.addEventListener('change', checkTermsCheckboxes);
+            }
 
-            document.getElementById('terms-continue').addEventListener('click', () => {
-                localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, timestamp: Date.now() }));
-                closeModal('terms-modal');
-                triggerGoogleLogin();
-            });
+            if (termsContinue) {
+                termsContinue.addEventListener('click', () => {
+                    localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, timestamp: Date.now() }));
+                    closeModal('terms-modal');
+                    triggerGoogleLogin();
+                });
+            }
 
             // Close modals on background click
             document.querySelectorAll('.modal').forEach(modal => {
@@ -2575,9 +2780,13 @@
 
         // Check terms checkboxes
         function checkTermsCheckboxes() {
-            const ageChecked = document.getElementById('terms-age').checked;
-            const agreeChecked = document.getElementById('terms-agree').checked;
-            document.getElementById('terms-continue').disabled = !(ageChecked && agreeChecked);
+            const ageChecked = document.getElementById('terms-age');
+            const agreeChecked = document.getElementById('terms-agree');
+            const termsContinue = document.getElementById('terms-continue');
+            
+            if (ageChecked && agreeChecked && termsContinue) {
+                termsContinue.disabled = !(ageChecked.checked && agreeChecked.checked);
+            }
         }
 
         // Initialize on DOM load
