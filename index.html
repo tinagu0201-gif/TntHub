@@ -1675,7 +1675,7 @@
 
     <script>
         // Google OAuth Client ID - Replace with your actual client ID from Google Cloud Console
-        const CLIENT_ID = '683900832087-8q7i1ncuqh7pqgrbnll0ejkb0cfvsgvq.apps.googleusercontent.com'; // IMPORTANT: Replace this with your actual Google Client ID
+        const CLIENT_ID = '683900832087-8q7i1ncuqh7pqgrbnll0ejkb0cfvsgvq.apps.googleusercontent.com';
 
         // Translations
         const translations = {
@@ -2480,19 +2480,28 @@
                 });
             });
 
-            // Login button
+            // 用户区域点击事件（登录和头像下拉）
             const userArea = document.getElementById('user-area');
             if (userArea) {
-                userArea.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('login-btn')) {
+                userArea.addEventListener('click', function(e) {
+                    const target = e.target;
+                    
+                    // 如果点击的是登录按钮（包括动态创建的）
+                    if (target.classList.contains('login-btn') || target.closest('.login-btn')) {
                         debugLog('Login button clicked');
-                        showTermsAndLogin();
-                    } else if (e.target.closest('.user-area')) {
-                        if (currentUser) {
-                            const userDropdown = document.getElementById('user-dropdown');
-                            if (userDropdown) {
-                                userDropdown.classList.toggle('show');
-                            }
+                        if (CLIENT_ID && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                            showTermsAndLogin();
+                        } else {
+                            alert('Google login is not configured. Please set your Client ID.');
+                        }
+                        return;
+                    }
+                    
+                    // 如果点击的是用户头像区域（已登录状态）
+                    if (target.closest('.user-area') && currentUser) {
+                        const userDropdown = document.getElementById('user-dropdown');
+                        if (userDropdown) {
+                            userDropdown.classList.toggle('show');
                         }
                     }
                 });
@@ -2775,6 +2784,19 @@
                         closeModal(modal.id);
                     }
                 });
+            });
+
+            // 全局事件代理 - 登录按钮（确保动态创建的按钮也能被点击）
+            document.body.addEventListener('click', function(e) {
+                if (e.target.classList.contains('login-btn') || e.target.closest('.login-btn')) {
+                    debugLog('Login button clicked (global)');
+                    if (CLIENT_ID && CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+                        showTermsAndLogin();
+                    } else {
+                        alert('Google login is not configured. Please set your Client ID.');
+                    }
+                    e.preventDefault();
+                }
             });
         }
 
